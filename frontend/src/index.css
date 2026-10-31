@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #10365b;
+  --color-teal: #0d8389;
+  --color-background: #f7fafc;
+  --color-surface: #ffffff;
+  --color-slate: #64748b;
+
+  --font-sans: "Inter", ui-sans-system, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+html {
+  font-family: var(--font-sans);
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-navy);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+/* Dashboard layout: left nav 15% / workspace 62% / assistant 23% on desktop.
+   fr units keep the ratio exact once the gap is subtracted. */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(180px, 15fr) minmax(0, 85fr);
+  }
+  .dashboard-grid > .grid-assistant {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-grid {
+    grid-template-columns:
+      minmax(190px, 15fr) minmax(520px, 62fr)
+      minmax(280px, 23fr);
+  }
+  .dashboard-grid > .grid-assistant {
+    grid-column: auto;
+  }
+  .dashboard-grid--assistant-collapsed {
+    grid-template-columns:
+      minmax(190px, 15fr) minmax(520px, 1fr)
+      3.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
