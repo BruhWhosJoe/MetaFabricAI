@@ -8,7 +8,7 @@ mounted here without changing the existing routers or services.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import discovery, health
+from app.routers import discovery, health, recipe
 
 CORS_ORIGINS = [
     "http://localhost:5173",
@@ -28,6 +28,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(health.router, prefix="/api")
     app.include_router(discovery.router, prefix="/api")
+    app.include_router(recipe.router, prefix="/api")
     return app
 
 

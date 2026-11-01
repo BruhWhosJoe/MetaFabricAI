@@ -57,6 +57,9 @@ class Settings(BaseSettings):
     discovery_plan_max_completion_tokens: int = Field(default=4096, ge=256)
     discovery_rank_max_completion_tokens: int = Field(default=8192, ge=256)
 
+    # Data Recipe Agent (Step 10).
+    recipe_max_completion_tokens: int = Field(default=8192, ge=256)
+
 
 @lru_cache
 def get_settings() -> Settings:

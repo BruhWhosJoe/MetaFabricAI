@@ -8,12 +8,30 @@ from app.models.discovery import (
     RankingResult,
     SearchPlan,
 )
+from app.models.recipe import (
+    DataRecipeResponse,
+    DatasetRelationship,
+    DiscoveryContext,
+    RecipeDataset,
+    RecipeDraft,
+    RecipeRequest,
+    RecipeResponse,
+    WorkflowStep,
+)
 
 __all__ = [
     "CandidateEvaluation",
+    "DataRecipeResponse",
     "DatasetRecommendation",
+    "DatasetRelationship",
+    "DiscoveryContext",
     "DiscoveryRequest",
     "DiscoveryResponse",
     "RankingResult",
+    "RecipeDataset",
+    "RecipeDraft",
+    "RecipeRequest",
+    "RecipeResponse",
     "SearchPlan",
+    "WorkflowStep",
 ]

@@ -1,9 +1,10 @@
-# MetaFabricAI Backend (Steps 8-9)
+# MetaFabricAI Backend (Steps 8-10)
 
 FastAPI backend, reusable asynchronous FastMCP client for the Azure
-Metadata MCP Server, and (Step 9) the Meta Muse AI Metadata Discovery
-Agent. It does not yet generate Data Recipes (Step 10), does not connect
-the React frontend (Step 11), and does not duplicate the metadata catalog.
+Metadata MCP Server, (Step 9) the Meta Muse AI Metadata Discovery
+Agent, and (Step 10) the AI Data Recipe Agent. It does not connect
+the React frontend (Step 11), does not execute recipes, and does not
+duplicate the metadata catalog.
 
 ```text
 Citizen -> React Web App (Step 7, unchanged)
@@ -22,10 +23,12 @@ backend/
 │   ├── config.py               # pydantic-settings env configuration
 │   ├── agents/
 │   │   ├── __init__.py
-│   │   └── discovery_agent.py  # Muse Spark + MCP discovery workflow (Step 9)
+│   │   ├── discovery_agent.py  # Muse Spark + MCP discovery workflow (Step 9)
+│   │   └── recipe_agent.py     # Muse Spark Data Recipe workflow (Step 10)
 │   ├── models/
 │   │   ├── __init__.py
-│   │   └── discovery.py        # discovery request/response + plan/ranking
+│   │   ├── discovery.py        # discovery request/response + plan/ranking
+│   │   └── recipe.py           # Data Recipe request/response (Step 10)
 │   ├── services/
 │   │   ├── __init__.py
 │   │   ├── mcp_client.py       # reusable async FastMCP client
@@ -33,12 +36,14 @@ backend/
 │   └── routers/
 │       ├── __init__.py
 │       ├── discovery.py        # POST /api/discovery/search (Step 9)
+│       ├── recipe.py           # POST /api/recipe/generate (Step 10)
 │       └── health.py           # GET /api/health, GET /api/mcp/health
 ├── scripts/
 │   └── test_mcp_connection.py  # live Azure MCP connection test
 ├── tests/
 │   ├── conftest.py
 │   ├── test_discovery.py       # mocked MCP + model discovery tests (Step 9)
+│   ├── test_recipe.py          # mocked MCP + model Data Recipe tests (Step 10)
 │   ├── test_health.py          # health/docs/CORS + mocked MCP health
 │   └── test_mcp_client.py      # mocked-transport MCP client tests
 ├── requirements.txt
@@ -56,6 +61,7 @@ A future Muse agent belongs in `backend/app/agents/` (Step 9) and can reuse
 | `GET /api/health`  | `{"status": "ok", "service": "MetaFabricAI Backend"}`              |
 | `GET /api/mcp/health` | Connects to Azure MCP; returns actual discovered tool names, or `503` with an error when unavailable |
 | `POST /api/discovery/search` | Step 9 AI discovery: ranked, MCP-grounded dataset recommendations (see below) |
+| `POST /api/recipe/generate` | Step 10 Data Recipe: proposed (never executed) workflow from selected AssignedIDs |
 | `GET /docs`        | Interactive OpenAPI (Swagger UI) documentation                     |
 | `GET /openapi.json`| OpenAPI schema                                                     |
 
@@ -121,6 +127,17 @@ Errors: missing `MODEL_API_KEY` -> `503 model_not_configured`, unavailable
 MCP -> `503 mcp_unavailable`, model provider/response failure -> `502
 model_error`. Live discovery tests are opt-in:
 `$env:RUN_LIVE_DISCOVERY_TESTS=1` before running pytest.
+
+Step 10 Data Recipes (`POST /api/recipe/generate`) accept
+`{"question": "...", "selected_assigned_ids": ["42", "7"]}` (aliases such
+as `AssignedIDs` are also accepted), with optional `location` and
+`discovery_context`. Selected IDs are verified with one
+`get_layer_metadata` call -- the catalog is not rescanned -- then Muse
+Spark proposes roles, relationships, and ordered steps. The response
+always has `status: "proposed_not_executed"` and
+`analysis_performed: false`. Errors: duplicate/empty selection -> `422`,
+unknown AssignedIDs -> `404 dataset_not_found`, missing key or MCP
+failure -> `503`, model failure/malformed output -> `502 model_error`.
 
 Settings are loaded by [app/config.py](app/config.py) via `pydantic-settings`.
 Real `.env` files and `.venv` are git-ignored (root `.gitignore`).
