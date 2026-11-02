@@ -14,11 +14,17 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class DiscoveryRequest(BaseModel):
-    """Citizen natural-language discovery request."""
+    """Citizen natural-language discovery request.
+
+    ``max_recommendations`` is an optional explicit page size for legacy
+    callers. When omitted (the default), the agent returns every dataset
+    that meets the relevance criteria, ordered by relevance -- there is no
+    default total cap.
+    """
 
     question: str = Field(min_length=3, max_length=2000)
     location: str | None = Field(default=None, max_length=200)
-    max_recommendations: int = Field(default=5, ge=1, le=20)
+    max_recommendations: int | None = Field(default=None, ge=1)
 
     @field_validator("question")
     @classmethod
@@ -92,7 +98,15 @@ class DatasetRecommendation(BaseModel):
 
 
 class DiscoveryResponse(BaseModel):
-    """Structured response returned by POST /api/discovery/search."""
+    """Structured response returned by POST /api/discovery/search.
+
+    ``candidate_count`` is the number of catalog records that passed the
+    heuristic prefilter and were sent to relevance ranking;
+    ``recommendations`` is the subset that also passed the model relevance
+    threshold. ``timings_ms`` reports per-stage server-side durations for
+    performance diagnosis (Step 11.2); it is diagnostic only and never
+    affects ranking.
+    """
 
     request_id: str
     question: str
@@ -102,3 +116,5 @@ class DiscoveryResponse(BaseModel):
     catalog_examined: int = 0
     completeness: Literal["complete", "partial", "unknown"] = "unknown"
     warnings: list[str] = Field(default_factory=list)
+    candidate_count: int = Field(default=0, ge=0)
+    timings_ms: dict[str, float] | None = None

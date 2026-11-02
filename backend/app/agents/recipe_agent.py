@@ -23,7 +23,11 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from app.agents.discovery_agent import safe_access_url, valid_assigned_id
+from app.agents.discovery_agent import (
+    _raw_access_url,
+    record_access_url,
+    valid_assigned_id,
+)
 from app.config import get_settings
 from app.models.recipe import (
     DataRecipeResponse,
@@ -276,8 +280,8 @@ class RecipeAgent:
             role = roles_by_id.get(assigned_id)
             context = context_by_id.get(assigned_id)
             limitations: list[str] = []
-            raw_url = row.get("AccessURL")
-            access_url = safe_access_url(raw_url)
+            raw_url = _raw_access_url(row)
+            access_url = record_access_url(row)
             if raw_url and access_url is None:
                 limitations.append(
                     "AccessURL in metadata was not a valid HTTP/HTTPS URL "

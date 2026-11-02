@@ -24,6 +24,11 @@ export interface Dataset {
   AccessURL?: string;
   metadata: DatasetMetadata;
   qualityWarnings: string[];
+  /** Live-backend fields (Step 11); absent for demo/mock datasets. */
+  relevanceScore?: number;
+  proposedRole?: string;
+  assignedId?: string;
+  isLive?: boolean;
 }
 
 export interface DatasetGroup {

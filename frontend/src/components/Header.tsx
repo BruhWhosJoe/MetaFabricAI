@@ -5,9 +5,10 @@ interface HeaderProps {
   activeTab: AppTab;
   onTabChange: (tab: AppTab) => void;
   selectedCount: number;
+  isLive?: boolean;
 }
 
-export default function Header({ activeTab, onTabChange, selectedCount }: HeaderProps) {
+export default function Header({ activeTab, onTabChange, selectedCount, isLive }: HeaderProps) {
   const tabClass = (tab: AppTab) =>
     `rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
       activeTab === tab
@@ -40,9 +41,15 @@ export default function Header({ activeTab, onTabChange, selectedCount }: Header
               </span>
             )}
           </button>
-          <span className="ml-1 hidden rounded border border-amber-300/50 bg-amber-400/15 px-2 py-1 text-xs font-medium text-amber-200 md:inline-block">
-            Demo data
-          </span>
+          {isLive ? (
+            <span className="ml-1 hidden rounded border border-teal-300/50 bg-teal-400/15 px-2 py-1 text-xs font-medium text-teal-100 md:inline-block">
+              Live data
+            </span>
+          ) : (
+            <span className="ml-1 hidden rounded border border-amber-300/50 bg-amber-400/15 px-2 py-1 text-xs font-medium text-amber-200 md:inline-block">
+              Demo data
+            </span>
+          )}
         </nav>
       </div>
     </header>

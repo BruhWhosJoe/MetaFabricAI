@@ -49,14 +49,40 @@ export default function DatasetCard({ dataset, selected, onToggleSelected }: Dat
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-[15px] font-semibold text-navy">{dataset.title}</h3>
-            <span className="rounded bg-navy/8 px-1.5 py-0.5 text-[11px] font-semibold text-navy">
-              {dataset.sourceLevel}
-            </span>
-            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800">
-              Mock
-            </span>
+            {!dataset.isLive && (
+              <span className="rounded bg-navy/8 px-1.5 py-0.5 text-[11px] font-semibold text-navy">
+                {dataset.sourceLevel}
+              </span>
+            )}
+            {dataset.isLive ? (
+              <>
+                <span className="rounded bg-teal/15 px-1.5 py-0.5 text-[11px] font-semibold text-teal">
+                  Live
+                </span>
+                {typeof dataset.relevanceScore === "number" && (
+                  <span className="rounded bg-navy/8 px-1.5 py-0.5 text-[11px] font-semibold text-navy">
+                    Relevance {Math.round(dataset.relevanceScore)}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800">
+                Mock
+              </span>
+            )}
           </div>
           <p className="mt-0.5 text-[13px] text-slate">{dataset.source}</p>
+          {dataset.isLive && dataset.assignedId && (
+            <p className="mt-0.5 font-mono text-xs break-all text-slate">
+              AssignedID: {dataset.assignedId}
+            </p>
+          )}
+          {dataset.isLive && dataset.proposedRole && (
+            <p className="mt-1 text-[13px] text-navy/85">
+              <span className="font-medium text-navy">Proposed role: </span>
+              {dataset.proposedRole}
+            </p>
+          )}
 
           <p className="mt-2.5 text-sm leading-relaxed text-navy/85">
             <span className="font-medium text-navy">Why this dataset: </span>

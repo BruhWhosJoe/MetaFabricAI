@@ -28,38 +28,47 @@ body {
   min-height: 100svh;
 }
 
-/* Dashboard layout: left nav 15% / workspace 62% / assistant 23% on desktop.
-   fr units keep the ratio exact once the gap is subtracted. */
+/* Dashboard layout (Step 11.3): fixed-width side rails with a flexible center.
+   Root cause of the former hide/show shift: every track shared proportional
+   units, so collapsing the assistant redistributed free space and the left
+   sidebar jumped from ~15% to ~94% of the row. Fixed rem tracks keep the
+   sidebar (15rem) and the assistant (22rem) constant; only the center
+   minmax(0, 1fr) track grows when the assistant collapses to its 3.25rem rail.
+   overflow-x: clip contains wide dataset content instead of shifting the page. */
 .dashboard-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   padding: 1rem;
   align-items: start;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 @media (min-width: 1024px) {
   .dashboard-grid {
-    grid-template-columns: minmax(180px, 15fr) minmax(0, 85fr);
+    grid-template-columns: 15rem minmax(0, 1fr);
   }
   .dashboard-grid > .grid-assistant {
     grid-column: 1 / -1;
+  }
+  .dashboard-grid--assistant-collapsed > .grid-assistant {
+    justify-self: start;
+    width: 3.25rem;
   }
 }
 
 @media (min-width: 1280px) {
   .dashboard-grid {
-    grid-template-columns:
-      minmax(190px, 15fr) minmax(520px, 62fr)
-      minmax(280px, 23fr);
+    grid-template-columns: 15rem minmax(0, 1fr) 22rem;
   }
   .dashboard-grid > .grid-assistant {
     grid-column: auto;
+    justify-self: stretch;
+    width: auto;
   }
   .dashboard-grid--assistant-collapsed {
-    grid-template-columns:
-      minmax(190px, 15fr) minmax(520px, 1fr)
-      3.25rem;
+    grid-template-columns: 15rem minmax(0, 1fr) 3.25rem;
   }
 }
 

@@ -8,6 +8,7 @@ interface SidebarProps {
   onToggleSourceLevel: (level: SourceLevel) => void;
   countsByLevel: Record<SourceLevel, number>;
   selectedCount: number;
+  onResetWorkspace?: () => void;
 }
 
 const NAV_ITEMS: { id: SidebarNav; label: string; icon: typeof LayoutDashboard }[] = [
@@ -25,6 +26,7 @@ export default function Sidebar({
   onToggleSourceLevel,
   countsByLevel,
   selectedCount,
+  onResetWorkspace,
 }: SidebarProps) {
   return (
     <aside className="min-w-0 rounded-lg border border-slate/20 bg-surface p-4 shadow-sm lg:sticky lg:top-4 lg:self-start">
@@ -79,6 +81,22 @@ export default function Sidebar({
         </div>
         <p className="mt-3 px-1 text-xs leading-relaxed text-slate">
           Filters apply to the recommended datasets in the workspace.
+        </p>
+      </div>
+
+      <div className="mt-6 border-t border-slate/15 pt-4">
+        <h2 className="px-1 text-xs font-semibold tracking-wide text-slate uppercase">
+          Workspace
+        </h2>
+        <button
+          type="button"
+          onClick={onResetWorkspace}
+          className="mt-2 w-full rounded-md border border-slate/30 px-3 py-2 text-left text-sm font-medium text-navy hover:bg-background"
+        >
+          Reset Workspace
+        </button>
+        <p className="mt-2 px-1 text-xs leading-relaxed text-slate">
+          Clears the saved search, selections, and recipe after confirmation.
         </p>
       </div>
     </aside>

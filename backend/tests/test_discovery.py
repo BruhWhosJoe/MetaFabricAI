@@ -500,7 +500,8 @@ def test_discovery_response_structure_is_preserved():
         "/api/discovery/search", json=QUESTION).json()
     assert set(body) == {
         "request_id", "question", "interpreted_intent", "recommendations",
-        "catalog_total", "catalog_examined", "completeness", "warnings"}
+        "catalog_total", "catalog_examined", "completeness", "warnings",
+        "candidate_count", "timings_ms"}
     assert set(body["recommendations"][0]) == {
         "AssignedID", "title", "description", "source_portal", "access_url",
         "relevance_score", "relevance_reason", "proposed_role", "limitations"}
@@ -628,9 +629,15 @@ def test_discovery_request_validation():
     assert client.post("/api/discovery/search", json={}).status_code == 422
     assert client.post(
         "/api/discovery/search", json={"question": "ab"}).status_code == 422
+    # No hidden total cap: large explicit limits are accepted.
     assert client.post(
         "/api/discovery/search",
         json={"question": "valid question", "max_recommendations": 21},
+    ).status_code == 200
+    # Non-positive limits are still rejected.
+    assert client.post(
+        "/api/discovery/search",
+        json={"question": "valid question", "max_recommendations": 0},
     ).status_code == 422
     assert client.post(
         "/api/discovery/search",
@@ -644,6 +651,89 @@ def test_model_selection_is_configurable():
         reasoning_model="muse-wonder-1.0", client=object())
     assert client.model_for() == "muse-spark-1.3"
     assert client.model_for(use_reasoning=True) == "muse-wonder-1.0"
+
+
+# No-cap regression tests: more than five, full coverage, batched ranking --
+@pytest.mark.asyncio
+async def test_returns_more_than_five_results_ordered_by_relevance():
+    rows = [make_row(str(i), f"Flood Hazard Area {i}") for i in range(1, 9)]
+    scores_by_id = {str(i): 60 + i * 2 for i in range(1, 9)}
+    model = FakeModelClient(evaluations=lambda candidates: [
+        {"AssignedID": c["AssignedID"],
+         "relevance_score": scores_by_id[c["AssignedID"]],
+         "relevance_reason": "Relevant.", "proposed_role": "input dataset",
+         "limitations": []}
+        for c in candidates])
+    request = DiscoveryRequest(
+        question="Which neighborhoods in Washington, DC are vulnerable to flooding?",
+        location="Washington, DC",
+    )
+    result = await make_agent(FakeMCPClient(rows), model).search(request)
+    assert len(result.recommendations) == 8
+    assert [r.AssignedID for r in result.recommendations] == [
+        "8", "7", "6", "5", "4", "3", "2", "1"]
+    scores = [r.relevance_score for r in result.recommendations]
+    assert scores == sorted(scores, reverse=True)
+    assert result.completeness == "complete"
+    assert result.catalog_total == 8 and result.catalog_examined == 8
+
+
+@pytest.mark.asyncio
+async def test_candidate_set_not_truncated_to_thirty():
+    rows = [make_row(str(i), f"Flood Zone Dataset {i}") for i in range(35)]
+    request = DiscoveryRequest(
+        question="Which neighborhoods in Washington, DC are vulnerable to flooding?",
+        location="Washington, DC",
+    )
+    result = await make_agent(FakeMCPClient(rows)).search(request)
+    assert len(result.recommendations) == 35
+    assert result.catalog_examined == 35
+    assert result.completeness == "complete"
+
+
+@pytest.mark.asyncio
+async def test_rank_batching_pages_through_all_candidates():
+    rows = [make_row(str(i), f"Flood Risk Dataset {i}") for i in range(25)]
+    model = FakeModelClient()
+    agent = make_agent(FakeMCPClient(rows), model, rank_batch_size=4)
+    request = DiscoveryRequest(
+        question="Which neighborhoods in Washington, DC are vulnerable to flooding?",
+        location="Washington, DC",
+    )
+    result = await agent.search(request)
+    assert len(result.recommendations) == 25
+    rank_calls = [c for c in model.calls if c == "candidate_ranking"]
+    assert len(rank_calls) == 7  # ceil(25 / 4) bounded batches
+    scores = [r.relevance_score for r in result.recommendations]
+    assert scores == sorted(scores, reverse=True)
+
+
+@pytest.mark.asyncio
+async def test_complete_catalog_coverage_reports_complete():
+    rows = [make_row(str(i), f"Flood Hazard Area {i}") for i in range(1, 4)]
+    request = DiscoveryRequest(
+        question="Which neighborhoods in Washington, DC are vulnerable to flooding?",
+        location="Washington, DC",
+    )
+    result = await make_agent(FakeMCPClient(rows)).search(request)
+    assert result.completeness == "complete"
+    assert result.catalog_total == 3 and result.catalog_examined == 3
+    assert not any("partial" in w.lower() for w in result.warnings)
+    assert not any("safety limit" in w.lower() for w in result.warnings)
+
+
+@pytest.mark.asyncio
+async def test_explicit_max_recommendations_is_honored_as_page_size():
+    rows = [make_row(str(i), f"Flood Hazard Area {i}") for i in range(1, 9)]
+    request = DiscoveryRequest(
+        question="Which neighborhoods in Washington, DC are vulnerable to flooding?",
+        location="Washington, DC",
+        max_recommendations=3,
+    )
+    result = await make_agent(FakeMCPClient(rows)).search(request)
+    assert len(result.recommendations) == 3
+    scores = [r.relevance_score for r in result.recommendations]
+    assert scores == sorted(scores, reverse=True)
 
 
 # Live integration (opt-in only) ------------------------------------------------

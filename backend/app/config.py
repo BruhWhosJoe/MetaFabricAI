@@ -44,14 +44,31 @@ class Settings(BaseSettings):
     # "low" keeps straightforward planning/ranking reasoning bounded.
     model_reasoning_effort: str | None = Field(default="low")
 
-    # Discovery Agent safety limits (Step 9). These bound catalog scanning
-    # and model token use; hitting a limit yields partial results, never
-    # silently skipped pages.
+    # Discovery Agent safety limits (Steps 9/11.2). Catalog scan bounds
+    # report partial coverage via completeness/warnings, never silently
+    # skipped pages. discovery_candidate_limit is retained for
+    # backward-compatible construction only; ranking no longer truncates
+    # to it.
+    #
+    # Live-server limits verified 2026-11-01 against the Azure Metadata
+    # MCP Server (see Step 11.2 report): get_metadata_catalog rejects
+    # limit > 100 ("limit cannot exceed 100. Use pagination with offset"),
+    # and get_layer_metadata rejects more than 50 layer_ids per call
+    # ("Too many layer_ids. Maximum per call is 50."). Do not raise
+    # discovery_catalog_page_size above 100 without a matching server-side
+    # change to MAX_CATALOG_ROWS_PER_CALL; larger pages were benchmarked
+    # and rejected (100 -> ok, 500/1000 -> error). The agent pages with
+    # offset/next_offset and chunks detail lookups to <= 50 IDs instead.
     discovery_catalog_page_size: int = Field(default=100, ge=1, le=100)
     discovery_max_catalog_records: int = Field(default=10000, ge=1)
     discovery_candidate_limit: int = Field(default=30, ge=1, le=200)
     discovery_rank_batch_size: int = Field(default=10, ge=1, le=50)
-    discovery_min_relevance_score: float = Field(default=1.0, ge=0, le=100)
+    # Relevance gate (Step 11.2): the ranking model scores 0-100 where
+    # >= 75 is a direct match, 40-74 is useful supporting context, and
+    # < 40 is weak/tangential. Only scores >= this threshold surface as
+    # recommendations; weak matches are excluded rather than capped by
+    # count, so broad requests still paginate over genuinely relevant sets.
+    discovery_min_relevance_score: float = Field(default=40.0, ge=0, le=100)
     # Per-operation completion budgets (reasoning + visible JSON). Planning
     # output is small; ranking returns one evaluation per candidate.
     discovery_plan_max_completion_tokens: int = Field(default=4096, ge=256)
@@ -59,6 +76,12 @@ class Settings(BaseSettings):
 
     # Data Recipe Agent (Step 10).
     recipe_max_completion_tokens: int = Field(default=8192, ge=256)
+
+    # AI Assistant Agent (Step 11.3). One structured chat call per user
+    # message over a compact candidate context; MCP is touched only for
+    # targeted verification, geo/date filter resolution, or an explicitly
+    # allowed broader catalog search.
+    assistant_max_completion_tokens: int = Field(default=2048, ge=256)
 
 
 @lru_cache
