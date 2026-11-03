@@ -1,10 +1,64 @@
 # MetaFabric AI
 
-### Mission-Driven Data Discovery for the AI Era
+### A Data Discovery Revolution for the AI Era
 
 **From a mission to the right data. From fragmented data sources to actionable Data Recipes.**
 
-MetaFabric AI is a metadata-first, AI-assisted application that helps people discover and organize relevant government datasets across multiple open-data portals. Instead of guessing keywords or knowing which portal to visit, users describe a **mission** (for example, identifying data relevant to pedestrian safety near schools). MetaFabric interprets the question, retrieves candidate metadata through an MCP service, recommends sources with explanations, allows conversational refinement, and proposes a **Data Recipe**.
+For decades, finding public data has meant typing keywords into dozens of separate government portals and hoping your words match the agency's terminology. The data exists, but people (and the AI systems that depend on it) can't find it.
+
+MetaFabric AI is a metadata-first, AI-assisted application that changes the starting point from *keywords* to *missions*. Users describe what they want to accomplish (for example, analyzing traffic safety near schools). Powered by Meta's **Muse Spark** model, MetaFabric interprets the mission, reasons over **every record** in a unified catalog of public metadata retrieved through an MCP service, recommends sources with explanations and caveats, supports conversational refinement, and proposes a **Data Recipe**: a structured plan for combining the selected datasets, including its own data gaps and limitations.
+
+## Traditional search vs. MetaFabric AI
+
+The same mission, tested on Washington, DC's official open-data portal and in MetaFabric AI:
+
+> *"I am looking for data to support traffic safety analysis near DC schools."*
+
+| Approach | Result |
+| --- | --- |
+| **opendata.dc.gov**, full sentence typed in | **No results found** |
+| **opendata.dc.gov**, shortened to keywords "traffic safety and schools" | **2 results**, and both describe the same Automated Safety Cameras data |
+| **MetaFabric AI** | **20 relevant datasets**, ranked and explained, then a 10-dataset Data Recipe covering schools, crashes, the High Injury Network, Safe Passage Routes, Vision Zero reports, moving violations, and traffic volume |
+
+Results from a live session on November 3, 2026; counts may change as the portal and catalog are updated. A full record of the traditional search is in [docs/Traditional Data Search_DC_Traffic and schools.pdf](docs/Traditional%20Data%20Search_DC_Traffic%20and%20schools.pdf).
+
+**Traditional portal search: full mission returns nothing; keywords return two near-duplicates**
+
+![DC open-data portal: no results for the full mission](docs/TraditonalOpenDataPortalSearch1_DCopendata.png)
+
+![DC open-data portal: two results for keyword search](docs/TraditonalOpenDataPortalSearch2_DCopendata.png)
+
+**MetaFabric AI: explained, ranked recommendations with caveats and live source links**
+
+![MetaFabric AI recommended datasets](docs/MainUI2.png)
+
+Why the difference? Keyword search matches words; missions need meaning. Traffic safety near schools draws on crash records, high-injury corridors, safe walking routes, enforcement data, and traffic volumes, and most of those datasets never mention the word "schools." Muse Spark connects the mission to the data by reasoning about what each dataset *is for*, not just what words it contains.
+
+## Screenshots
+
+### Mission search and AI Assistant
+
+Every catalog record is examined (here, 1,660 of 1,660). The mission is interpreted in plain language, and the AI Assistant refines results conversationally.
+
+![MetaFabric AI main workspace](docs/MainUI1.png)
+
+Each recommendation links directly to the provider's real dataset:
+
+![Opening a recommended dataset at its source](docs/MainUI3_openRealdata.png)
+
+### Data Recipe
+
+![Generating a Data Recipe](docs/GeneratingDataRecipe1.png)
+
+| Recipe section | Screenshot |
+| --- | --- |
+| Analytical objective | ![Analytical objective](docs/DataRecipe0_analyticalObjective.png) |
+| Selected datasets | ![Selected datasets](docs/DataRecipe1_selecteddata.png) |
+| Dataset relationships | ![Dataset relationships](docs/DataRecipe2_datarelationship.png) |
+| Proposed workflow | ![Proposed workflow](docs/DataRecipe3_ProposedWorkflow.png) |
+| Data gaps, assumptions, and limitations | ![Data gaps, assumptions, and limitations](docs/DataRecipe4_DataGapAssumptionLimitation.png) |
+
+Every recipe is labeled **"Proposed — not executed."** Instead of overclaiming, it surfaces what is missing, such as crash-location layers absent from the selection, null temporal ranges, and mismatched coordinate systems, so analysts know what to verify before starting.
 
 > **Scope:** MetaFabric AI discovers and reasons over **metadata**, not copies of the underlying government datasets. A Data Recipe proposes sources, relationships, and analysis steps; it **does not execute** GIS analyses or establish that a real-world outcome has been proven. Dataset access and permissions remain with each data provider.
 
@@ -88,13 +142,17 @@ These are proposed extensions, not promises about current system behavior.
 | --- | --- |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS, Lucide React |
 | Backend | Python, FastAPI, Pydantic, Uvicorn |
-| AI integration | Meta Model API; configured default `muse-spark-1.3` and optional `muse-wonder-1.0` |
+| AI integration | Meta Model API; default `muse-spark-1.3` for all agents; `muse-wonder-1.0` optional (see below) |
 | Metadata integration | FastMCP client, MCP over HTTPS |
 | MCP hosting | Docker and Microsoft Azure Container Apps (separate repository) |
 | Frontend tests | Vitest, Testing Library |
 | Backend tests | pytest, pytest-asyncio |
 
-Muse Code was used as a development assistant. This is distinct from invoking Meta models in the running backend.
+### How Meta's models are used
+
+- **Muse Spark 1.3** is the reasoning engine for all three backend agents (Discovery, AI Assistant, and Data Recipe), called through the OpenAI-compatible Chat Completions endpoint with **strict JSON-schema structured output**. Its 1M-token context window lets the Discovery Agent evaluate the full catalog (about 160K tokens for 1,660 records) instead of a keyword-filtered shortlist.
+- **Muse Wonder 1.0** was evaluated for recipe reasoning. Muse Spark delivered the quality the application needed at a much lower cost, so Spark is the default; Wonder remains available through `META_REASONING_MODEL` but is not called in the current version.
+- **Muse Code** was used as an agentic development assistant while building the frontend and backend. This is distinct from invoking Meta models in the running backend.
 
 ## Repository structure
 
@@ -103,8 +161,10 @@ MetaFabricAI/
 ├── README.md
 ├── .gitignore
 ├── docs/
-│   └── MetaFabric AI System Architecture Infographic.png
-│   └── Data Fabric Discovery Demo.html
+│   ├── MetaFabric AI System Architecture Infographic.png
+│   ├── Data Fabric Discovery Demo.html
+│   ├── MainUI*.png, GeneratingDataRecipe1.png, DataRecipe*.png   # app screenshots
+│   └── TraditonalOpenDataPortalSearch*.png, Traditional Data Search_*.pdf   # comparison
 ├── frontend/
 │   ├── package.json
 │   ├── vite.config.ts
