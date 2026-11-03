@@ -1,95 +1,306 @@
 # MetaFabric AI
 
-AI-powered government open-data discovery website.
+### Mission-Driven Data Discovery for the AI Era
 
-**Tagline:** Government Open Data Intelligence
+**From a mission to the right data. From fragmented data sources to actionable Data Recipes.**
 
-> Phase 1B — dashboard built with clearly labeled mock datasets for
-> frontend testing. No Azure MCP or Meta Model API is connected yet, and
-> no GIS analysis is performed.
+MetaFabric AI is a metadata-first, AI-assisted application that helps people discover and organize relevant government datasets across multiple open-data portals. Instead of guessing keywords or knowing which portal to visit, users describe a **mission** (for example, identifying data relevant to pedestrian safety near schools). MetaFabric interprets the question, retrieves candidate metadata through an MCP service, recommends sources with explanations, allows conversational refinement, and proposes a **Data Recipe**.
 
-## Dashboard preview
+> **Scope:** MetaFabric AI discovers and reasons over **metadata**, not copies of the underlying government datasets. A Data Recipe proposes sources, relationships, and analysis steps; it **does not execute** GIS analyses or establish that a real-world outcome has been proven. Dataset access and permissions remain with each data provider.
 
-After `npm run dev`, open [http://localhost:5173](http://localhost:5173):
+## System architecture
 
-- **Left (15%)** — Dashboard / Datasets / Saved Recipes navigation and
-  Federal / State / Local source filters.
-- **Middle (62%)** — Explore Government Data search, example missions
-  (Flood Risks, Public Health, Infrastructure), mission interpretation,
-  AI Data Fabric summary, grouped Recommended Datasets with `AccessURL`
-  links, Data Gaps, Excluded on Purpose, and Suggested Analysis Path.
-- **Right (23%)** — collapsible AI Assistant with labeled demo responses.
-- **Data Recipe tab** — selected datasets, proposed workflow, gaps,
-  limitations, and potential outputs. Tick dataset checkboxes, then use
-  **Generate Data Recipe**.
+![MetaFabric AI System Architecture](doc/MetaFabric%20AI%20System%20Architecture%20Infographic.png)
 
-## Tech stack (frontend)
+[Open the full-size architecture diagram](doc/MetaFabric%20AI%20System%20Architecture%20Infographic.png)
 
-- React 19 + TypeScript
-- Vite 8
-- Tailwind CSS 4 (via the `@tailwindcss/vite` plugin)
-- Lucide React icons
-- Inter font (Google Fonts)
+The architecture combines **three related GitHub repositories**. The harvester supplies standardized catalog metadata; the MCP server exposes that metadata to AI clients; and this repository contains the web experience and the backend AI workflows.
 
-Design colors:
-
-| Token      | Value     |
-| ---------- | --------- |
-| Navy       | `#10365B` |
-| Teal       | `#0D8389` |
-| Background | `#F7FAFC` |
-| White      | `#FFFFFF` |
-| Slate      | `#64748B` |
-
-## Prerequisites
-
-- Node.js 20+ (developed on Node.js 26.13.0)
-- npm 11+
-
-## Run the frontend
-
-```powershell
-cd C:\Projects\MetaFabricAI\frontend
-npm install
-npm run dev
+```text
+Federal / state / local government open-data portals
+                     |
+                     v
+     OpenDataHarvester (separate repository)
+     Collect and normalize dataset metadata
+                     |
+                     v
+       Standardized metadata catalog
+                     |
+                     v
+     MetadataMCPServer (separate repository)
+     Four MCP tools; Azure Container Apps
+                     ^
+                     | MCP over HTTPS
+                     v
+       MetaFabricAI / backend (FastAPI)
+    MCP client + Meta Model API integration
+    Discovery Agent / Recipe Agent / Assistant
+                     ^
+                     | /api HTTP requests
+                     v
+       MetaFabricAI / frontend (React)
+       Mission search, dataset selection,
+       conversational refinement, recipes
 ```
 
-Then open the URL printed by Vite in your browser — by default
-[http://localhost:5173](http://localhost:5173).
+**Deployment clarification:** The MCP service is hosted in Azure Container Apps. The instructions below run the React and FastAPI application **locally**. The included infographic is a conceptual system diagram; it should not be interpreted as proof that every component is deployed in Azure.
 
-## Other commands
+### Related repositories and responsibilities
 
-Run these from `C:\Projects\MetaFabricAI\frontend`:
+| Repository | Role | What it contributes |
+| --- | --- | --- |
+| **[MetaFabricAI](https://github.com/BruhWhosJoe/MetaFabricAI)** (this repository) | AI application and user experience | React/TypeScript web UI, FastAPI API, Meta Model API client, Discovery Agent, Recipe Agent, AI Assistant, testing and integration. |
+| **[MetadataMCPServer](https://github.com/BruhWhosJoe/MetadataMCPServer)** | Metadata access layer | FastMCP server exposing metadata field discovery, catalog search/retrieval, and detailed dataset metadata through four MCP tools. Hosted separately in Azure Container Apps. |
+| **[OpenDataHarvester](https://github.com/BruhWhosJoe/OpenDataHarvester)** | Metadata collection layer | Python harvesting and normalization tools for public open-data portal records; prepares the catalog used by the MCP service. |
 
-```powershell
-npm run build    # type-check (tsc -b) + production build to dist/
-npm run preview  # preview the production build
-npm run lint     # oxlint
-```
+**Running this application does not require rebuilding the harvester or running a local MCP server**, provided the configured Azure MCP endpoint is available. To rebuild or maintain the catalog or MCP service, consult the other repositories separately.
 
-## Project structure
+## Why mission-driven discovery?
+
+Traditional portal search often assumes users know dataset titles, agency terminology, or geographic data structures. A mission such as *“What information would help identify neighborhoods facing flood vulnerability in Washington, DC?”* may require several kinds of data, each described differently and located in different portals.
+
+MetaFabric AI uses Meta's models to relate the mission to available metadata, explain why specific records could be useful, support user refinement, and assemble proposed combinations into Data Recipes. It can be useful even when only titles, descriptions, summaries, access URLs, and other essential metadata fields are available; however, **better metadata generally leads to more trustworthy recommendations**.
+
+The prototype's catalog has been reported to contain **1,660 metadata records**. This is catalog coverage, not the number of datasets downloaded or analyzed, and may change as the catalog is updated.
+
+## Features
+
+- **Mission-oriented search:** Enter a natural-language question instead of only dataset keywords.
+- **Multi-source metadata discovery:** Search across normalized public-data records drawn from different portals.
+- **Explainable recommendations:** Discover candidate datasets, with assigned identifiers and supporting metadata.
+- **Conversational AI refinement:** Request additional filtering and update recommendations through the assistant.
+- **Dataset selection and Data Recipes:** Choose dataset records and generate a structured, proposed workflow describing how they might be used together.
+- **Source traceability:** Review metadata and source/access links supplied by the catalog.
+- **Metadata-first approach:** Discover data without centralizing underlying records or bypassing the data provider's access rules.
+
+### Future directions (not current features)
+
+- Data-gap identification and a way for users to publish missing-data requests.
+- Collaboration in which providers can respond to data-gap requests.
+- Permission-aware discovery of internal metadata across agencies.
+- Retention and evaluation of historical Data Recipes to improve later recommendations.
+
+These are proposed extensions, not promises about current system behavior.
+
+## Technology stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, Lucide React |
+| Backend | Python, FastAPI, Pydantic, Uvicorn |
+| AI integration | Meta Model API; configured default `muse-spark-1.3` and optional `muse-wonder-1.0` |
+| Metadata integration | FastMCP client, MCP over HTTPS |
+| MCP hosting | Docker and Microsoft Azure Container Apps (separate repository) |
+| Frontend tests | Vitest, Testing Library |
+| Backend tests | pytest, pytest-asyncio |
+
+Muse Code was used as a development assistant. This is distinct from invoking Meta models in the running backend.
+
+## Repository structure
 
 ```text
 MetaFabricAI/
-├── frontend/            # React + TypeScript + Vite app
-│   ├── public/
-│   └── src/
-│       ├── components/  # Header, Sidebar, DatasetCard, AIAssistant
-│       ├── pages/       # DashboardPage, DataRecipePage
-│       ├── data/        # mock missions + datasets (demo, not live MCP)
-│       ├── services/    # API placeholder + URL validation helper
-│       ├── types/       # shared TypeScript types
-│       ├── App.tsx
-│       ├── main.tsx
-│       └── index.css    # Tailwind v4 theme: colors + Inter
-├── doc/                 # project documents
-└── README.md
+├── README.md
+├── .gitignore
+├── doc/
+│   └── MetaFabric AI System Architecture Infographic.png
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── vitest.config.ts
+│   └── src/                 # UI, pages, services, tests, components
+└── backend/
+    ├── .env.example        # configuration template (no real secret)
+    ├── requirements.txt
+    ├── README.md           # detailed backend guide
+    ├── pytest.ini
+    ├── app/
+    │   ├── main.py         # app factory, CORS, API routing
+    │   ├── config.py       # environment settings
+    │   ├── agents/         # discovery, recipe, assistant
+    │   ├── routers/        # API endpoint definitions
+    │   ├── models/         # request and response models
+    │   └── services/       # MCP and Meta model clients
+    ├── scripts/            # MCP connectivity script
+    └── tests/              # mocked automated API / agent tests
 ```
 
-## Notes
+## Run locally (Windows PowerShell)
 
-- The independent MCP project at
-  `C:\Projects\MetadataProject\MetadataMCPServer` is untouched by this
-  phase and is not connected to the frontend yet.
-- Copy `.env.example` conventions later when an API is added; real `.env`
-  files and secrets are git-ignored.
+### Prerequisites
+
+- Git
+- Python **3.11 or newer** (the project has also been developed with Python 3.14)
+- Node.js and npm compatible with the pinned frontend toolchain (prefer a current supported Node.js version; the existing frontend README describes Node.js 20+)
+- Network access to the configured MCP service
+- A valid **Meta Model API key** for live AI functionality
+
+### 1. Clone the repository
+
+```powershell
+cd C:\Projects
+git clone https://github.com/BruhWhosJoe/MetaFabricAI.git
+cd C:\Projects\MetaFabricAI
+```
+
+If you already have the repository at `C:\Projects\MetaFabricAI`, do **not** clone it a second time. Instead, open that directory and use `git pull` after committing or backing up local changes.
+
+### 2. Create the project-level Python environment and install dependencies
+
+Run these commands from `C:\Projects\MetaFabricAI`:
+
+```powershell
+# Create once (skip if .venv already exists)
+python -m venv .venv
+
+# Install backend dependencies using the venv interpreter directly
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+
+# Create a local settings file from the safe template
+Copy-Item backend\.env.example backend\.env
+```
+
+If you prefer activation, run `.\.venv\Scripts\Activate.ps1`. If the shell blocks that script, you can continue using the explicit `.venv\Scripts\python.exe` commands above without changing PowerShell execution policy.
+
+### 3. Configure the backend
+
+Open `backend\.env` and set `MODEL_API_KEY` to your **own authorized key**. Example (placeholders only):
+
+```dotenv
+MCP_SERVER_URL=https://ca-metadata-mcp-dev.wittyforest-26c063ae.eastus.azurecontainerapps.io/mcp
+MCP_TIMEOUT_SECONDS=60
+MODEL_API_KEY=replace_with_your_real_key_locally
+META_MODEL=muse-spark-1.3
+META_REASONING_MODEL=muse-wonder-1.0
+META_API_BASE_URL=https://api.meta.ai/v1
+```
+
+The sample endpoint is the development service configured by this repository and may be stopped or changed. The `.env.example` file documents additional settings, including pagination and token budgets. The current MCP catalog page size must remain **100 or less** unless the remote server is reconfigured accordingly.
+
+**Security:** Never commit `backend/.env`, real API keys, access tokens, or restricted metadata. The API key belongs only in the server-side backend. Do not place it in frontend code or a `VITE_` variable.
+
+### 4. Start the FastAPI backend (Terminal 1)
+
+```powershell
+cd C:\Projects\MetaFabricAI\backend
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Open:
+
+- Health: <http://127.0.0.1:8000/api/health>
+- MCP connection: <http://127.0.0.1:8000/api/mcp/health>
+- Interactive API documentation: <http://127.0.0.1:8000/docs>
+
+The backend must remain running while you use the frontend. Press **Ctrl+C** in this terminal to stop it.
+
+### 5. Start the React frontend (Terminal 2)
+
+```powershell
+cd C:\Projects\MetaFabricAI\frontend
+npm ci
+npm run dev -- --host 127.0.0.1 --port 5173
+```
+
+Open <http://127.0.0.1:5173>. The Vite configuration proxies requests beginning with `/api` to the local backend at `http://127.0.0.1:8000`, so both terminals should be running.
+
+## Verify the setup and test the project
+
+### A. Basic health checks (Terminal 3)
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8000/api/health
+Invoke-RestMethod http://127.0.0.1:8000/api/mcp/health
+```
+
+The first endpoint checks that FastAPI is running. The second makes a **live network request** to the configured MCP service and should report the available tools. If it returns HTTP 503, check the MCP endpoint, network, and whether the Azure service is running.
+
+The four MCP tools documented for this system are:
+
+1. `get_metadata_fields` — discover available search metadata fields.
+2. `get_metadata_field_definitions` — retrieve field descriptions/definitions.
+3. `get_metadata_catalog` — retrieve/search catalog records with pagination.
+4. `get_layer_metadata` — retrieve detailed metadata for selected dataset IDs.
+
+### B. Automated backend tests (mocked, no live Azure dependency)
+
+```powershell
+cd C:\Projects\MetaFabricAI\backend
+..\.venv\Scripts\python.exe -m pytest tests -v
+```
+
+The backend suite includes health, MCP client, discovery, recipe, assistant, and UI integration-contract tests. Most external dependencies are mocked; consult individual tests before enabling any explicitly opt-in live integration checks.
+
+### C. Automated frontend tests, lint, and build
+
+```powershell
+cd C:\Projects\MetaFabricAI\frontend
+npm test
+npm run lint
+npm run build
+```
+
+`npm test` uses Vitest, `npm run lint` uses Oxlint, and `npm run build` runs TypeScript checking and bundles the production frontend. These tests do not substitute for a full live AI/MCP smoke test.
+
+### D. Live MCP connectivity script
+
+```powershell
+cd C:\Projects\MetaFabricAI\backend
+..\.venv\Scripts\python.exe scripts\test_mcp_connection.py
+```
+
+This checks the live MCP tools and retrieves a small catalog sample. It requires the remote MCP server to be accessible.
+
+### E. End-to-end manual demonstration
+
+1. Confirm both the frontend and backend are running, and `/api/mcp/health` succeeds.
+2. In the web application, ask a mission-oriented question, for example: **“Which government datasets could help identify flood-vulnerable neighborhoods in Washington, DC?”**
+3. Examine recommended datasets, AssignedIDs, explanations, and source/access URLs.
+4. Ask the AI Assistant to refine the recommendations (for example, exclude a clearly irrelevant dataset) and verify the recommendation list updates.
+5. Select relevant datasets and generate a Data Recipe.
+6. Confirm that the recipe cites actual selected dataset IDs and shows a **proposed** workflow, without claiming that spatial analysis has already been performed.
+
+For direct API requests, use the interactive OpenAPI documentation at <http://127.0.0.1:8000/docs> to see the current request schemas.
+
+### Main API endpoints
+
+| Endpoint | Function |
+| --- | --- |
+| `GET /api/health` | FastAPI health check |
+| `GET /api/mcp/health` | Connect to MCP and enumerate tools |
+| `POST /api/discovery/search` | Mission-aware discovery and dataset ranking |
+| `POST /api/recipe/generate` | Proposed Data Recipe for selected AssignedIDs |
+| `POST /api/assistant/chat` | Metadata-aware conversational refinement |
+| `GET /docs` | Swagger / OpenAPI UI |
+
+## Troubleshooting
+
+| Symptom | What to check |
+| --- | --- |
+| The frontend opens but live search fails | Verify both terminals are running and that the backend is reachable on port 8000. |
+| `/api/mcp/health` returns `503` | The Azure MCP service, its URL, or network access may be unavailable. Run the live MCP test script. |
+| `model_not_configured` | Add a valid `MODEL_API_KEY` to `backend/.env` and restart the backend. |
+| `model_error` / HTTP `502` | Check Meta API access, selected model, response formatting, and account limits. |
+| `ModuleNotFoundError: app` | Launch Uvicorn and pytest from the `backend` directory. |
+| Port 5173 or 8000 is in use | Stop the other process with Ctrl+C; update the proxy if the backend port changes. |
+| PowerShell activation blocked | Use the explicit `.venv\Scripts\python.exe` commands provided above. |
+| Recipe returns an unknown dataset error | Verify the selected AssignedIDs are present in the configured catalog. |
+
+## Data access, trust, and limitations
+
+- **Discovery is not access authorization.** Dataset providers determine access permissions, terms, and how to request restricted data.
+- Catalog information is metadata; MetaFabric AI does not ingest all underlying datasets into a central store.
+- Recommendations depend on the completeness and correctness of source metadata and on model reasoning; users should verify source relevance and availability.
+- The recipe represents a **proposed analysis plan**. It does not execute joins, calculate risk scores, or validate causal claims.
+- Future use with nonpublic agency metadata would require authentication, authorization-aware retrieval, audit controls, and protection of sensitive metadata.
+
+## Development and acknowledgments
+
+Created for the **Meta Global AI Developer Hackathon**. Meta Muse models are integrated through the Meta Model API, while Muse Code assisted the implementation workflow. The project uses React, Python, FastAPI, FastMCP, Docker, and Azure components as described above.
+
+See the linked repositories for the metadata collection and MCP service implementations. Contributions and ownership should be credited accurately in the final hackathon submission.
+
+---
+
+**In the AI era, reliable data is the foundation of reliable intelligence. MetaFabric AI helps people discover the right data for the missions that matter.**
