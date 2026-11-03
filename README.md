@@ -48,8 +48,6 @@ Each recommendation links directly to the provider's real dataset:
 
 ### Data Recipe
 
-![Generating a Data Recipe](docs/GeneratingDataRecipe1.png)
-
 | Recipe section | Screenshot |
 | --- | --- |
 | Analytical objective | ![Analytical objective](docs/DataRecipe0_analyticalObjective.png) |
