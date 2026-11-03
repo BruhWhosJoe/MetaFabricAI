@@ -102,8 +102,9 @@ Muse Code was used as a development assistant. This is distinct from invoking Me
 MetaFabricAI/
 ├── README.md
 ├── .gitignore
-├── doc/
+├── docs/
 │   └── MetaFabric AI System Architecture Infographic.png
+│   └── Data Fabric Discovery Demo.html
 ├── frontend/
 │   ├── package.json
 │   ├── vite.config.ts
@@ -176,7 +177,7 @@ META_REASONING_MODEL=muse-wonder-1.0
 META_API_BASE_URL=https://api.meta.ai/v1
 ```
 
-The sample endpoint is the development service configured by this repository and may be stopped or changed. The `.env.example` file documents additional settings, including pagination and token budgets. The current MCP catalog page size must remain **100 or less** unless the remote server is reconfigured accordingly.
+The sample endpoint is the development service configured by this repository and may be stopped or changed. The `.env.example` file documents additional settings, including pagination and token budgets. The current MCP catalog page size must remain **500 or less** unless the remote server is reconfigured accordingly.
 
 **Security:** Never commit `backend/.env`, real API keys, access tokens, or restricted metadata. The API key belongs only in the server-side backend. Do not place it in frontend code or a `VITE_` variable.
 
