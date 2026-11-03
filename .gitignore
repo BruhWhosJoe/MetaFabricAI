@@ -37,3 +37,6 @@ npm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Private development documents - do not upload to GitHub
+/docs/devdoc/

@@ -21,6 +21,22 @@ from app.models.discovery import DiscoveryRequest
 from app.models.recipe import RecipeRequest
 from app.services.mcp_client import MCPConnectionError, MCPToolError
 
+
+@pytest.fixture(autouse=True)
+def _pin_legacy_mode(monkeypatch):
+    """Step 12: this module's Step 11.2 tests pin the preserved legacy
+    heuristic-prefilter path; Step 12 full-catalog modes are covered in
+    test_step12.py."""
+    import app.agents.discovery_agent as _da
+
+    _orig_init = _da.DiscoveryAgent.__init__
+
+    def _patched(self, *args, **kwargs):
+        kwargs.setdefault("mode", "legacy")
+        _orig_init(self, *args, **kwargs)
+
+    monkeypatch.setattr(_da.DiscoveryAgent, "__init__", _patched)
+
 HEALTH_PLAN = {
     "subject": "healthcare data",
     "summary": "Find healthcare related data.",

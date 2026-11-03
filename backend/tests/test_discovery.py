@@ -165,6 +165,10 @@ class FakeModelClient:
 
 
 def make_agent(mcp, model=None, **kwargs):
+    # Step 12: these Step 9/11.2 tests pin the preserved legacy
+    # heuristic-prefilter path; Step 12 full-catalog modes are covered in
+    # test_step12.py.
+    kwargs.setdefault("mode", "legacy")
     return DiscoveryAgent(mcp, model or FakeModelClient(), **kwargs)
 
 

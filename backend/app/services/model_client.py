@@ -29,6 +29,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
 from typing import Any
 
 from app.config import get_settings
@@ -245,6 +246,28 @@ class MetaModelClient:
             effort = None
         self.reasoning_effort = effort
         self._client = client
+        # Last successful Chat Completions usage, for Step 12 latency /
+        # token accounting. Updated after every successful generate_json
+        # call; None when the provider did not report usage (or when a
+        # test double bypasses this client entirely).
+        self.last_usage: dict[str, Any] | None = None
+        # Cumulative usage across all generate_json calls on this client,
+        # so multi-call searches (parallel batches + final rank) can sum
+        # actual model input/output/reasoning tokens.
+        self.usage_totals: dict[str, float] = {
+            "prompt_tokens": 0.0,
+            "completion_tokens": 0.0,
+            "total_tokens": 0.0,
+            "reasoning_tokens": 0.0,
+        }
+        # Per-attempt execution history for Step 12.1 latency accounting.
+        # One entry per Chat Completions call (success or provider error),
+        # grouped by generate_json invocation via ``call_id`` so parallel
+        # batches stay attributable. Records model, budgets, wall time,
+        # provider-reported usage, and finish reason -- never prompts,
+        # catalog text, or raw responses.
+        self.call_history: list[dict[str, Any]] = []
+        self._call_seq = 0
 
     @property
     def is_configured(self) -> bool:
@@ -303,6 +326,8 @@ class MetaModelClient:
             {"role": "user", "content": user_prompt},
         ]
         model = self.model_for(use_reasoning)
+        self._call_seq += 1
+        call_id = self._call_seq
         strict_format: dict[str, Any] | None = {
             "type": "json_schema",
             "json_schema": {
@@ -330,11 +355,32 @@ class MetaModelClient:
                     schema_name, model, budget, self.reasoning_effort,
                     response_format is not None,
                 )
+                attempt_started = time.perf_counter()
                 try:
                     response = await client.chat.completions.create(**kwargs)
                 except ModelClientError:
                     raise
                 except Exception as exc:  # provider / timeout / connection
+                    self.call_history.append({
+                        "call_id": call_id,
+                        "operation": schema_name,
+                        "model": model,
+                        "max_completion_tokens": budget,
+                        "reasoning_effort": self.reasoning_effort,
+                        "structured": response_format is not None,
+                        "wall_ms": round(
+                            (time.perf_counter() - attempt_started) * 1000, 1
+                        ),
+                        "finish_reason": None,
+                        "prompt_tokens": None,
+                        "completion_tokens": None,
+                        "total_tokens": None,
+                        "reasoning_tokens": None,
+                        "content_state": None,
+                        "content_length": 0,
+                        "parse_ms": 0.0,
+                        "error": f"{type(exc).__name__}: {str(exc)[:120]}",
+                    })
                     last_error = exc
                     status = getattr(exc, "status_code", None) or getattr(
                         exc, "status", None
@@ -351,6 +397,36 @@ class MetaModelClient:
                     raise _provider_error(exc) from exc
                 info = _inspect_response(response)
                 _log_response(schema_name, model, info)
+                self.call_history.append({
+                    "call_id": call_id,
+                    "operation": schema_name,
+                    "model": model,
+                    "max_completion_tokens": budget,
+                    "reasoning_effort": self.reasoning_effort,
+                    "structured": response_format is not None,
+                    "wall_ms": round(
+                        (time.perf_counter() - attempt_started) * 1000, 1
+                    ),
+                    "finish_reason": info.get("finish_reason"),
+                    "prompt_tokens": info.get("prompt_tokens"),
+                    "completion_tokens": info.get("completion_tokens"),
+                    "total_tokens": info.get("total_tokens"),
+                    "reasoning_tokens": info.get("reasoning_tokens"),
+                    "content_state": info.get("content_state"),
+                    "content_length": info.get("content_length"),
+                    "parse_ms": 0.0,
+                    "error": None,
+                })
+                self.last_usage = {
+                    "prompt_tokens": info.get("prompt_tokens"),
+                    "completion_tokens": info.get("completion_tokens"),
+                    "total_tokens": info.get("total_tokens"),
+                    "reasoning_tokens": info.get("reasoning_tokens"),
+                }
+                for key in self.usage_totals:
+                    value = self.last_usage.get(key)
+                    if isinstance(value, (int, float)):
+                        self.usage_totals[key] += float(value)
                 if info["choices"] == 0:
                     raise ModelResponseError(
                         "Model response contained no choices."
@@ -387,6 +463,7 @@ class MetaModelClient:
                         f"{info['finish_reason']!r})."
                     )
                 content = info["content"]
+                parse_started = time.perf_counter()
                 try:
                     if response_format is not None:
                         text = content.strip()
@@ -421,6 +498,13 @@ class MetaModelClient:
                     "model parse succeeded operation=%s model=%s",
                     schema_name, model,
                 )
+                parse_ms = (time.perf_counter() - parse_started) * 1000
+                for entry in reversed(self.call_history):
+                    if entry.get("call_id") == call_id:
+                        entry["parse_ms"] = round(
+                            entry.get("parse_ms", 0.0) + parse_ms, 1
+                        )
+                        break
                 return parsed
         raise _provider_error(last_error) if last_error else ModelProviderError(
             "Meta Model API request failed."

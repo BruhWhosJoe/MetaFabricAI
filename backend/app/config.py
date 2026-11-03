@@ -59,10 +59,25 @@ class Settings(BaseSettings):
     # change to MAX_CATALOG_ROWS_PER_CALL; larger pages were benchmarked
     # and rejected (100 -> ok, 500/1000 -> error). The agent pages with
     # offset/next_offset and chunks detail lookups to <= 50 IDs instead.
-    discovery_catalog_page_size: int = Field(default=100, ge=1, le=100)
+    discovery_catalog_page_size: int = Field(default=500, ge=1, le=500)
     discovery_max_catalog_records: int = Field(default=10000, ge=1)
     discovery_candidate_limit: int = Field(default=30, ge=1, le=200)
     discovery_rank_batch_size: int = Field(default=10, ge=1, le=50)
+    # Step 12 full-catalog architectures. "full_parallel" (Architecture B)
+    # is the default: every catalog record is evaluated by Muse, in
+    # concurrent batches, with no deterministic prefilter. "full_single"
+    # (Architecture A) sends the whole catalog in one model call when it
+    # fits the input token budget, otherwise it falls back to parallel
+    # batches. "legacy" preserves the Step 11.2 heuristic-prefilter path
+    # for benchmark comparison and rollback only.
+    discovery_mode: str = Field(default="full_parallel")
+    discovery_full_catalog_batch_size: int = Field(default=750, ge=100, le=1000)
+    discovery_full_catalog_concurrency: int = Field(default=4, ge=1, le=8)
+    # Safe single-call input budget (tokens), leaving headroom inside the
+    # 1,048,576-token muse-spark-1.3 context for reasoning + JSON output.
+    discovery_full_catalog_input_token_budget: int = Field(
+        default=900000, ge=10000
+    )
     # Relevance gate (Step 11.2): the ranking model scores 0-100 where
     # >= 75 is a direct match, 40-74 is useful supporting context, and
     # < 40 is weak/tangential. Only scores >= this threshold surface as

@@ -1,0 +1,78 @@
+{
+  "mcp_server": "https://ca-metadata-mcp-dev.wittyforest-26c063ae.eastus.azurecontainerapps.io/mcp",
+  "tool": "get_metadata_catalog",
+  "catalog_total_reported": 1660,
+  "total_records_retrieved": 1660,
+  "unique_assigned_ids": 1660,
+  "duplicate_assigned_ids": 0,
+  "page_count": 4,
+  "total_elapsed_ms": 1137.36,
+  "total_payload_bytes": 2302617,
+  "total_payload_mb": 2.196,
+  "fields_found": [
+    "AssignedID",
+    "Description",
+    "LayerList",
+    "Summary",
+    "Tags",
+    "Title"
+  ],
+  "page_summaries": [
+    {
+      "page_number": 1,
+      "offset": 0,
+      "requested_limit": 500,
+      "server_reported_records": 500,
+      "extracted_records": 500,
+      "has_more": true,
+      "next_offset": 500,
+      "elapsed_ms": 198.08,
+      "response_size_bytes": 614512,
+      "response_size_kb": 600.11
+    },
+    {
+      "page_number": 2,
+      "offset": 500,
+      "requested_limit": 500,
+      "server_reported_records": 500,
+      "extracted_records": 500,
+      "has_more": true,
+      "next_offset": 1000,
+      "elapsed_ms": 100.43,
+      "response_size_bytes": 598438,
+      "response_size_kb": 584.41
+    },
+    {
+      "page_number": 3,
+      "offset": 1000,
+      "requested_limit": 500,
+      "server_reported_records": 500,
+      "extracted_records": 500,
+      "has_more": true,
+      "next_offset": 1500,
+      "elapsed_ms": 62.95,
+      "response_size_bytes": 744485,
+      "response_size_kb": 727.04
+    },
+    {
+      "page_number": 4,
+      "offset": 1500,
+      "requested_limit": 500,
+      "server_reported_records": 160,
+      "extracted_records": 160,
+      "has_more": false,
+      "next_offset": null,
+      "elapsed_ms": 36.49,
+      "response_size_bytes": 345182,
+      "response_size_kb": 337.09
+    }
+  ],
+  "first_record": {
+    "AssignedID": "1",
+    "Title": "Aerial Photography (Orthophoto) - 2009",
+    "LayerList": "[{\"id\":null,\"name\":\"Ortho/Ortho_2009\"}]",
+    "Summary": "This data is used for the planning and management of Washington, D.C. by local government agencies.",
+    "Description": "2009 Aerial Photography (1 foot resolution) - Sector Tiles Pictometry provided as part of the 2009 photo capture were exported to tiff and provided as a raster catalog. An Ortho Sector Tile is typically a 1 foot GSD ortho mosaic tile covering a 1-square mile area that is created by deresolving the best available orthogonal images captured. Images are not radiometrically balanced, may have observable cut lines and could consist of imagery taken over a period of several days. Note - Print at your own risk, the images have seamlines between some tiles and the Pictometry logo is in the southeast corner of every tile. All DC GIS data is stored and exported in Maryland State Plane coordinates NAD 83 meters.",
+    "Tags": "tiff, aerial photography, orthophoto, Washington DC, District of Columbia, Orthophoto 2009, DC, historic, imagery"
+  }
+}

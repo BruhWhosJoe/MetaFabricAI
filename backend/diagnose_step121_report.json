@@ -1,0 +1,46 @@
+{
+  "mode": "live",
+  "live_model_calls": 2,
+  "question": "I am looking for traffic safety data near DC schools. Please find related data for this analysis.",
+  "input_contract": {
+    "records": 1660,
+    "unique_assigned_ids": 1660,
+    "all_have_six_fields": true
+  },
+  "arms": [
+    {
+      "arm": "verbose",
+      "model": "muse-spark-1.3",
+      "max_completion_tokens": 8192,
+      "input_chars": 2318671,
+      "input_est_tokens": 579667,
+      "attempts": 1,
+      "wall_ms": 53227.0,
+      "finish_reason": "stop",
+      "prompt_tokens": 507751,
+      "completion_tokens": 3242,
+      "reasoning_tokens": 1364,
+      "parse_ms": 0.0,
+      "validate_ms": 0.0,
+      "evaluations": 20,
+      "errors": []
+    },
+    {
+      "arm": "concise",
+      "model": "muse-spark-1.3",
+      "max_completion_tokens": 8192,
+      "input_chars": 2318671,
+      "input_est_tokens": 579667,
+      "attempts": 1,
+      "wall_ms": 106694.0,
+      "finish_reason": "stop",
+      "prompt_tokens": 507722,
+      "completion_tokens": 2345,
+      "reasoning_tokens": 1934,
+      "parse_ms": 0.0,
+      "validate_ms": 0.0,
+      "evaluations": 26,
+      "errors": []
+    }
+  ]
+}
