@@ -148,7 +148,7 @@ These are proposed extensions, not promises about current system behavior.
 
 ### How Meta's models are used
 
-- **Muse Spark 1.3** is the reasoning engine for all three backend agents (Discovery, AI Assistant, and Data Recipe), called through the OpenAI-compatible Chat Completions endpoint with **strict JSON-schema structured output**. Its 1M-token context window lets the Discovery Agent evaluate the full catalog (about 160K tokens for 1,660 records) instead of a keyword-filtered shortlist.
+- **Muse Spark 1.3** is the reasoning engine for all three backend agents (Discovery, AI Assistant, and Data Recipe), called through the Meta Model API Chat Completions endpoint with **strict JSON-schema structured output**. Its 1M-token context window lets the Discovery Agent evaluate the full catalog (about 160K tokens for 1,660 records) instead of a keyword-filtered shortlist.
 - **Muse Wonder 1.0** was evaluated for recipe reasoning. Muse Spark delivered the quality the application needed at a much lower cost, so Spark is the default; Wonder remains available through `META_REASONING_MODEL` but is not called in the current version.
 - **Muse Code** was used as an agentic development assistant while building the frontend and backend. This is distinct from invoking Meta models in the running backend.
 
