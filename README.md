@@ -10,9 +10,9 @@ MetaFabric AI is a metadata-first, AI-assisted application that helps people dis
 
 ## System architecture
 
-![MetaFabric AI System Architecture](doc/MetaFabric%20AI%20System%20Architecture%20Infographic.png)
+![MetaFabric AI System Architecture](docs/MetaFabric%20AI%20System%20Architecture%20Infographic.png)
 
-[Open the full-size architecture diagram](doc/MetaFabric%20AI%20System%20Architecture%20Infographic.png)
+[Open the full-size architecture diagram](docs/MetaFabric%20AI%20System%20Architecture%20Infographic.png)
 
 The architecture combines **three related GitHub repositories**. The harvester supplies standardized catalog metadata; the MCP server exposes that metadata to AI clients; and this repository contains the web experience and the backend AI workflows.
 
