@@ -22,12 +22,6 @@ The same mission, tested on Washington, DC's official open-data portal and in Me
 
 Results from a live session on November 3, 2026; counts may change as the portal and catalog are updated. A full record of the traditional search is in [docs/Traditional Data Search_DC_Traffic and schools.pdf](docs/Traditional%20Data%20Search_DC_Traffic%20and%20schools.pdf).
 
-**Traditional portal search: full mission returns nothing; keywords return two near-duplicates**
-
-![DC open-data portal: no results for the full mission](docs/TraditonalOpenDataPortalSearch1_DCopendata.png)
-
-![DC open-data portal: two results for keyword search](docs/TraditonalOpenDataPortalSearch2_DCopendata.png)
-
 **MetaFabric AI: explained, ranked recommendations with caveats and live source links**
 
 ![MetaFabric AI recommended datasets](docs/MainUI2.png)
