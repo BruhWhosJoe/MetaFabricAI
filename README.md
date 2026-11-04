@@ -1,4 +1,4 @@
-# MetaFabric AI
+# MetaFabricAI
 
 ### A Data Discovery Revolution for the AI Era
 
