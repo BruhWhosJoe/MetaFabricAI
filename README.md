@@ -43,10 +43,11 @@ Why the difference? Keyword search matches words; missions need meaning. Traffic
 Every catalog record is examined (here, 1,660 of 1,660). The mission is interpreted in plain language, and the AI Assistant refines results conversationally.
 
 ![MetaFabric AI main workspace](docs/MainUI1.png)
-
+![MetaFabric AI main workspace](docs/MainUI2.png)
 Each recommendation links directly to the provider's real dataset:
 
 ![Opening a recommended dataset at its source](docs/MainUI3_openRealdata.png)
+
 
 ### Data Recipe
 
