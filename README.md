@@ -5,7 +5,15 @@
 **From a mission to the right data. From fragmented data sources to actionable Data Recipes.**
 
 For decades, finding public data has meant typing keywords into dozens of separate government portals and hoping your words match the agency's terminology. The data exists, but people (and the AI systems that depend on it) can't find it.
-
+Keyword search leaves users with seven problems:
+1. It depends on perfect metadata, yet standards vary and fields are often incomplete.
+2. It matches strings, not the meaning of titles, descriptions, or data dictionaries.
+3. It can't turn a real-world mission into the data needed to address it.
+4. Users must guess which keywords agencies use.
+5. Natural-language questions don't work.
+6. Nothing explains how datasets relate or how to combine them for analysis.
+7. Data gaps stay invisible until deep into an analysis.
+   
 MetaFabric AI is a metadata-first, AI-assisted application that changes the starting point from *keywords* to *missions*. Users describe what they want to accomplish (for example, analyzing traffic safety near schools). Powered by Meta's **Muse Spark** model, MetaFabric interprets the mission, reasons over **every record** in a unified catalog of public metadata retrieved through an MCP service, recommends sources with explanations and caveats, supports conversational refinement, and proposes a **Data Recipe**: a structured plan for combining the selected datasets, including its own data gaps and limitations.
 
 ## Traditional search vs. MetaFabric AI
