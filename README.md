@@ -361,13 +361,12 @@ For direct API requests, use the interactive OpenAPI documentation at <http://12
 
 ## Development and acknowledgments
 
-Created for the **Meta Global AI Developer Hackathon**. Meta Muse models are integrated through the Meta Model API, while Muse Code assisted the implementation workflow. The project uses React, Python, FastAPI, FastMCP, Docker, and Azure components as described above.
+Created for attending **Meta Global AI Developer Hackathon**. Meta Muse models are integrated through the Meta Model API, while Muse Code assisted the implementation workflow. The project uses React, Python, FastAPI, FastMCP, Docker, and Azure components as described above.
 See the linked repositories for the metadata collection and MCP service implementations. 
 This project is developed by Jonathan Wang. You may send email to Jonxiangxiang@outlook.com for any questions about this project.
 
-## Copyright
+**In the AI era, reliable data is the foundation of reliable intelligence. MetaFabric AI helps people discover the right data for the missions that matter.**
 
 Copyright © 2026 Jonathan Wang. All rights reserved.
 ---
 
-**In the AI era, reliable data is the foundation of reliable intelligence. MetaFabric AI helps people discover the right data for the missions that matter.**
