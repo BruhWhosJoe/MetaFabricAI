@@ -37,8 +37,10 @@ Results from a live session on November 3, 2026; counts may change as the portal
 Why the difference? Keyword search matches words; missions need meaning. Traffic safety near schools draws on crash records, high-injury corridors, safe walking routes, enforcement data, and traffic volumes, and most of those datasets never mention the word "schools." Muse Spark connects the mission to the data by reasoning about what each dataset *is for*, not just what words it contains.
 
 ## Screenshots
-
-### Mission search and AI Assistant
+### MetaFabric AI Main Page Layout
+- **Left panel (Navigation):** Links to Dashboard, Datasets, and Saved Recipes, plus filters for Federal, State, and Local data sources and a Reset Workspace button.
+- **Middle panel (Research Workspace):** Users enter a mission question and click **Search**. The AI interprets the question and returns a ranked list of candidate data layers, each with a relevance score and an explanation of why it was picked. Users select the layers they want, then click **Generate Data Recipe** at the bottom.
+- **Right panel (AI Assistant):** A chat where users ask natural-language follow-up questions to filter or refine the results, such as *"remove weakly relevant datasets"* or *"which datasets have access URLs?"*
 
 Every catalog record is examined (here, 1,660 of 1,660). The mission is interpreted in plain language, and the AI Assistant refines results conversationally.
 
